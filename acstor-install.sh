@@ -108,7 +108,7 @@ fi
 
 # Set Default Subscription ID
 if [[ -z ${AZURE_SUBSCRIPTION_ID:-} ]]; then
-  AZURE_SUBSCRIPTION_ID=$(az account show | jq '."id"')
+  AZURE_SUBSCRIPTION_ID=$(az account show -o tsv --query id)
   echo SubscriptionId - $AZURE_SUBSCRIPTION_ID
 fi
 
