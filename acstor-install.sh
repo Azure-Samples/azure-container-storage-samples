@@ -120,7 +120,7 @@ fi
 
 # Use default nodepool
 if [[ -z ${NODEPOOL_NAME:-} ]]; then
-  NODEPOOL_NAME=$(az aks show --resource-group $AZURE_RESOURCE_GROUP --name $AZURE_CLUSTER_DNS_NAME --query agentPoolProfiles | jq '.[].name')
+  NODEPOOL_NAME=$(az aks show --resource-group $AZURE_RESOURCE_GROUP --name $AZURE_CLUSTER_DNS_NAME -o tsv --query 'agentPoolProfiles[0].name')
   echo NodePool - $NODEPOOL_NAME
 fi
 
