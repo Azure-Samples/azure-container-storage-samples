@@ -114,7 +114,7 @@ fi
 
 # Use connected cluster
 if [[ -z ${AZURE_CLUSTER_DNS_NAME:-} ]]; then
-  AZURE_CLUSTER_DNS_NAME=`kubectl config current-context`
+  AZURE_CLUSTER_DNS_NAME=$(kubectl config current-context)
   echo Cluster Name - $AZURE_CLUSTER_DNS_NAME
 fi
 
