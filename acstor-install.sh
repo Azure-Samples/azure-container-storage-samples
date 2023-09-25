@@ -108,19 +108,19 @@ fi
 
 # Set Default Subscription ID
 if [[ -z ${AZURE_SUBSCRIPTION_ID:-} ]]; then
-  AZURE_SUBSCRIPTION_ID=$(az account show | jq '."id"')
+  AZURE_SUBSCRIPTION_ID=$(az account show -o tsv --query id)
   echo SubscriptionId - $AZURE_SUBSCRIPTION_ID
 fi
 
 # Use connected cluster
 if [[ -z ${AZURE_CLUSTER_DNS_NAME:-} ]]; then
-  AZURE_CLUSTER_DNS_NAME=`kubectl config current-context`
+  AZURE_CLUSTER_DNS_NAME=$(kubectl config current-context)
   echo Cluster Name - $AZURE_CLUSTER_DNS_NAME
 fi
 
 # Use default nodepool
 if [[ -z ${NODEPOOL_NAME:-} ]]; then
-  NODEPOOL_NAME=$(az aks show --resource-group $AZURE_RESOURCE_GROUP --name $AZURE_CLUSTER_DNS_NAME --query agentPoolProfiles | jq '.[].name')
+  NODEPOOL_NAME=$(az aks show --resource-group $AZURE_RESOURCE_GROUP --name $AZURE_CLUSTER_DNS_NAME -o tsv --query 'agentPoolProfiles[0].name')
   echo NodePool - $NODEPOOL_NAME
 fi
 
