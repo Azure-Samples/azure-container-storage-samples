@@ -145,7 +145,7 @@ fi
 # Assign Contributor role to AKS managed identity
 export AKS_MI_OBJECT_ID=$(az aks show --name $AZURE_CLUSTER_DNS_NAME --resource-group $AZURE_RESOURCE_GROUP --query "identityProfile.kubeletidentity.objectId" -o tsv)
 export AKS_NODE_RG=$(az aks show --name $AZURE_CLUSTER_DNS_NAME --resource-group $AZURE_RESOURCE_GROUP --query "nodeResourceGroup" -o tsv)
-az role assignment create --assignee $AKS_MI_OBJECT_ID --role "Contributor" --resource-group "$AKS_NODE_RG"
+az role assignment create --assignee $AKS_MI_OBJECT_ID --role "Contributor" --scope "/subscriptions/$AZURE_SUBSCRIPTION_ID/resourceGroups/$AZURE_RESOURCE_GROUP"
 
 read -e -p "Would you like to install ACStor using the above parameters? Proceed Y/N " choice
 [[ "$choice" == [Yy]* ]] && echo "Installing AcStor.." || exit 1
