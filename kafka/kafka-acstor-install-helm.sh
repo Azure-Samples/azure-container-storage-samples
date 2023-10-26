@@ -219,3 +219,11 @@ helm install kafka --namespace kafka --create-namespace \
   --set controller.logPersistence.size=8Gi \
   oci://registry-1.docker.io/bitnamicharts/kafka
 
+## Install Cassandra using HELM
+helm install cassandra --namespace cassandra --create-namespace \
+    --set global.storageClass=acstor-san3 \
+    --set dbUser.user=admin,dbUser.password=password \
+    --set replicaCount=3 \
+    --set persistence.size=20Gi \
+    --set persistence.commitLogsize=5Gi \
+    oci://registry-1.docker.io/bitnamicharts/cassandra
