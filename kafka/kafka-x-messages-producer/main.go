@@ -51,12 +51,29 @@ func main() {
 		numMessages, _ = strconv.Atoi(numMessagesStr)
 	}
 
-	// set up kafka writer
-	topic := "orders"
+	var user string
+	userStr := os.Getenv("KAFKA_USER")
+	if userStr == "" {
+		user = "user1"
+	} else {
+		user = userStr
+	}
 
-	// read environment variables
-	user := "user1"
-	password := "VOIgRUQ1PO"
+	var password string
+	passwordStr := os.Getenv("KAFKA_PASSWORD")
+	if passwordStr == "" {
+		password = "VOIgRUQ1PO"
+	} else {
+		password = passwordStr
+	}
+
+	var topic string
+	topicStr := os.Getenv("KAFKA_TOPIC")
+	if topicStr == "" {
+		topic = "orders"
+	} else {
+		topic = topicStr
+	}
 
 	// Create a producer instance with the given configuration
 	p, err := kafka.NewProducer(&kafka.ConfigMap{
@@ -83,9 +100,9 @@ func main() {
 
 		err = p.Produce(&kafka.Message{
 			TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
-			Key:   []byte(order.OrderID),
+			Key:   []byte(order.CustomerID),
 			Value: orderBytes,
-		},nil)
+		}, nil)
 		if err != nil {
 			fmt.Printf("Failed to produce message: %v\n", err)
 		}
@@ -98,15 +115,14 @@ func main() {
 		} else {
 			fmt.Printf("Delivered message with order ID %s\n", order.OrderID)
 		}
-
 		
 	}
 
 }
 
 func generateOrder() order {
-	orderID := strconv.Itoa(rand.Intn(1000000000))
-	customerID := strconv.Itoa(rand.Intn(10000))
+	orderID := strconv.Itoa(rand.Intn(100000000000))
+	customerID := strconv.Itoa(rand.Intn(1000))
 	numItems := rand.Intn(5) + 1
 	items := make([]item, numItems)
 	for i := 0; i < numItems; i++ {

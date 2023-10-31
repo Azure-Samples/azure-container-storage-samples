@@ -11,11 +11,13 @@ docker build -t jorgearteiro/kafka-x-messages-producer:0.4.0 .
 
 docker push -t jorgearteiro/kafka-x-messages-producer:0.4.0 .
 ```
- 
+
 ## Check size od the disks
 
 ```azurecli-interactive
-du -ch /bitnami/kafka/data
+du -chs /bitnami/kafka/data
+
+watch -n 1 -d du -s /bitnami/kafka/data
 ```
 
 ## Create Pod to Produce messages
