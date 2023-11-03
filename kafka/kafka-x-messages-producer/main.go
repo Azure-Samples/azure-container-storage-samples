@@ -9,7 +9,6 @@ import (
 	"strconv"
 
 	"github.com/confluentinc/confluent-kafka-go/v2/kafka"
-	
 )
 
 type order struct {
@@ -89,7 +88,7 @@ func main() {
 
 	// Close the producer on exit
 	defer p.Close()
-	
+
 	// produce X number of messages
 	for i := 0; i < numMessages; i++ {
 		order := generateOrder()
@@ -100,8 +99,8 @@ func main() {
 
 		err = p.Produce(&kafka.Message{
 			TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
-			Key:   []byte(order.CustomerID),
-			Value: orderBytes,
+			Key:            []byte(order.CustomerID),
+			Value:          orderBytes,
 		}, nil)
 		if err != nil {
 			fmt.Printf("Failed to produce message: %v\n", err)
@@ -115,15 +114,15 @@ func main() {
 		} else {
 			fmt.Printf("Delivered message with order ID %s\n", order.OrderID)
 		}
-		
+
 	}
 
 }
 
 func generateOrder() order {
-	orderID := strconv.Itoa(rand.Intn(100000000000))
+	orderID := strconv.Itoa(rand.Intn(1000000000000))
 	customerID := strconv.Itoa(rand.Intn(1000))
-	numItems := rand.Intn(5) + 1
+	numItems := rand.Intn(10000) + 9000
 	items := make([]item, numItems)
 	for i := 0; i < numItems; i++ {
 		items[i] = generateItem()
@@ -147,4 +146,3 @@ func generateItem() item {
 		Price:    price,
 	}
 }
-
