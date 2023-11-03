@@ -175,7 +175,7 @@ read -e -p "Would you like to install Kafka Kubernetes Apps Extension from bitna
 az role assignment create --assignee $AKS_MI_OBJECT_ID --role "Contributor" --scope "/subscriptions/$AZURE_SUBSCRIPTION_ID"
 
 # Wait assignment to propagate
-sleep 60
+#sleep 60
 
 export KAFKA_SAN_NAME=san3
 export EXTENSION_NAME=kafka
@@ -192,38 +192,39 @@ kubectl apply -f - <<EOF
 apiVersion: containerstorage.azure.com/v1alpha1
 kind: StoragePool
 metadata:
-  name: san3
+  name: san1
   namespace: acstor
 spec:
   poolType:
     elasticSan: {}
   resources:
-    requests: {"storage": 1Ti}
+    requests: {"storage": 4Ti}
 EOF
 
 # Wait for the storage pool to be ready and storage account be created
-sleep 300
-
-# Accept Marketplace offer
-#az vm image terms accept --offer $KAFKA_PLAN_OFFERID --plan $KAFKA_PLAN_NAME --publisher $KAFKA_PLAN_PUBLISHER
-
-# Install Kafka Extension from Marketplace 
-#az k8s-extension create --cluster-type managedClusters --cluster-name $AZURE_CLUSTER_DNS_NAME --resource-group $AZURE_RESOURCE_GROUP --name $EXTENSION_NAME --extension-type $KAFKA_EXTENSION_TYPE --scope cluster --release-train $KAFKA_RELEASE_TRAIN --release-namespace $KAFKA_RELEASE_NAMESPACE --plan-name $KAFKA_PLAN_NAME --plan-product $KAFKA_PLAN_OFFERID --plan-publisher $KAFKA_PLAN_PUBLISHER --configuration-settings global.storageClass=$KAFKA_STORAGE_CLASS
+#sleep 300
 
 # Install Kafka using HELM
 helm install kafka --namespace kafka --create-namespace \
-  --set global.storageClass=acstor-san3 \
+  --set diagnosticMode.enabled=True \
+  --set controller.heapOpts="-Xmx2G -Xms2G" \
+  --set controller.resources.limits.cpu=2 \
+  --set controller.resources.limits.memory=4Gi \
+  --set controller.resources.requests.cpu=1 \
+  --set controller.resources.requests.memory=2Gi \
+  --set global.storageClass=acstor-san1 \
   --set controller.replicaCount=3 \
-  --set controller.persistence.size=20Gi \
+  --set controller.persistence.enabled=True \
+  --set controller.persistence.size=100Gi \
   --set controller.logPersistence.enabled=True \
-  --set controller.logPersistence.size=8Gi \
+  --set controller.logPersistence.size=20Gi \
   oci://registry-1.docker.io/bitnamicharts/kafka
 
 ## Install Cassandra using HELM
-helm install cassandra --namespace cassandra --create-namespace \
-    --set global.storageClass=acstor-san3 \
-    --set dbUser.user=admin,dbUser.password=password \
-    --set replicaCount=3 \
-    --set persistence.size=20Gi \
-    --set persistence.commitLogsize=5Gi \
-    oci://registry-1.docker.io/bitnamicharts/cassandra
+# helm install cassandra --namespace cassandra --create-namespace \
+#     --set global.storageClass=acstor-san3 \
+#     --set dbUser.user=admin,dbUser.password=password \
+#     --set replicaCount=3 \
+#     --set persistence.size=20Gi \
+#     --set persistence.commitLogsize=5Gi \
+#     oci://registry-1.docker.io/bitnamicharts/cassandra

@@ -82,7 +82,28 @@ Run the following command to create a Linux-based AKS cluster and enable a syste
 Replace `<resource-group>` with the name of the resource group you created, `<cluster-name>` with the name of the cluster you want to create, and `<vm-type>` with the VM type you selected in the previous step. In this example, we'll create a cluster with three nodes. Increase the `--node-count` if you want a larger cluster. We are using VM size standard_d4s_v5
 
 ```azurecli-interactive
-az aks create -g <resource-group> -n <cluster-name> --node-count 3 -s <vm-type> --generate-ssh-keys
+az aks create -g <resource-group> -n <cluster-name> --generate-ssh-keys \
+       --node-count 3 
+       --node-vm-size <vm-type>
+       --enable-network-observability \
+       --enable-cluster-autoscaler --min-count 3 --max-count 20 \
+       --max-pods=110 \
+       --network-plugin azure \
+       --network-policy azure 
+
+az grafana create --name myGrafana --resource-group myResourceGroup
+
+grafanaId=$(az grafana show --name <myGrafana> --resource-group <myResourceGroup> --query id --output tsv)
+
+azuremonitorId=$(az resource show --resource-group <myResourceGroup> --name <myAzureMonitor> --resource-type "Microsoft.Monitor/accounts" --query id --output tsv)
+
+az aks update \
+    --name <cluster-name> \
+    --resource-group <resource-group> \
+    --enable-azure-monitor-metrics \
+    --azure-monitor-workspace-resource-id $azuremonitorId \
+    --grafana-resource-id $grafanaId
+
 ```
 
 The deployment will take a few minutes to complete.
