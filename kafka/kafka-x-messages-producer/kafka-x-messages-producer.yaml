@@ -4,7 +4,7 @@ metadata:
   name: kafka-x-messages-producer
   namespace: kafka
 spec:
-  replicas: 10
+  replicas: 100
   selector:
     matchLabels:
       app: kafka-x-messages-producer
