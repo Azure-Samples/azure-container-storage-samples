@@ -1,0 +1,7 @@
+# Ignore files and directories that are not required for the Docker image
+node_modules
+npm-debug.log
+.DS_Store
+.git
+.gitignore
+README.md
