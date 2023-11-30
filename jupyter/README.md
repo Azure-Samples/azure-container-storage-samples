@@ -30,7 +30,7 @@ az provider register --namespace Microsoft.KubernetesConfiguration --wait
 # Create a resource group
 az group create --name <resource-group-name> --location <location>
 
-# Create an AKS cluster with Azure Container Storage extension enabled
+# Create an AKS cluster with Azure Container Storage extension enabled. This will create a StoragePool of type Azure Disk by default. If you want to update the defaults (pool name, pool size or SKU), you can do so by using the parameters here: https://learn.microsoft.com/en-us/azure/storage/container-storage/container-storage-aks-quickstart#create-a-new-aks-cluster-and-install-azure-container-storage
 az aks create -n <cluster-name> -g <resource-group-name> --node-vm-size Standard_D4s_v3 --node-count 3 --enable-azure-container-storage azureDisk
 
 # Connect to the AKS cluster
