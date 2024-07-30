@@ -5,6 +5,7 @@ Azure Container Storage is a cloud-based volume management, deployment, and orch
 
 ## Resources
 
-- [Latest preview updates](https://aka.ms/AzureContainerStorageTechBlog)
+- [Azure Container Storage - Generally Available](https://azure.microsoft.com/en-us/blog/embrace-the-future-of-container-native-storage-with-azure-container-storage/)
+- [Azure Container Storage - AKS Engineering Blog](https://azure.github.io/AKS/2024/07/30/azure-container-storage-ga)
 - [Documentation](https://learn.microsoft.com/en-us/azure/storage/container-storage/)
 - [Get started](https://learn.microsoft.com/en-us/azure/storage/container-storage/container-storage-aks-quickstart)
