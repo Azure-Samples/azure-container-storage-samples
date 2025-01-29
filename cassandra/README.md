@@ -21,6 +21,7 @@ az aks create -g $AZURE_RESOURCE_GROUP -n $AZURE_CLUSTER_NAME --generate-ssh-key
        --os-sku AzureLinux \
        --enable-azure-container-storage ephemeralDisk \
        --storage-pool-option NVMe \
+       --ephemeral-disk-volume-type=PersistentVolumeWithAnnotation \
        --node-vm-size Standard_L8s_v3 \
        --max-pods=250 \
        --enable-azure-monitor-metrics \
@@ -54,8 +55,15 @@ Storage Class generated will be called "acstor-ephemeraldisk-nvme"
 
 ## Deploy Cassandra from Bitnami using Helm
 
+Create a file titled `cassandra-values.yaml` and add the following:
+```yaml
+persistence:
+  annotations:
+    acstor.azure.com/accept-ephemeral-storage: "true"
+```
+
+The `acstor.azure.com/accept-ephemeral-storage: "true"` annotation lets one create PVCs using `volumeClaimTemplates` / non ephemeral volumes. Next, we'll install Cassandra using Helm:
 ```azurecli-interactive
-# Install Cassandra using HELM
  helm install cassandra --namespace cassandra --create-namespace \
   --set replicaCount=3 \
   --set global.storageClass=acstor-ephemeraldisk-nvme \
@@ -67,5 +75,6 @@ Storage Class generated will be called "acstor-ephemeraldisk-nvme"
   --set resources.limits.memory=8Gi \
   --set resources.requests.cpu=2 \
   --set resources.requests.memory=4Gi \
+  --values cassandra-values.yaml \
   oci://registry-1.docker.io/bitnamicharts/cassandra
 ```
