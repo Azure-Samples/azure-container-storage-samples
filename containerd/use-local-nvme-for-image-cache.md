@@ -58,12 +58,86 @@ az aks nodepool add \
 
 2. Configure containerd to use NVMe storage via DaemonSet:
 
+> [!WARNING]
+> This approach is not officially supported by AKS and may break with future updates. Review and use with caution and test thoroughly before deploying in production environments.
+
 Download Daemonset sample and make changes as need:
 ```bash
-curl -o containerd-nvme-config.yaml https://github.com/Azure-Samples/azure-container-storage-samples/containerd/containerd-nvme-config.yaml
+curl -o containerd-nvme-daemonset.yaml https://github.com/Azure-Samples/azure-container-storage-samples/containerd/containerd-nvme-daemonset.yaml
 ```
 
 Create a DaemonSet to mount NVMe storage and configure containerd:
 ```bash
-kubectl apply -f containerd-nvme-config.yaml
+kubectl apply -f containerd-nvme-daemonset.yaml
+```
+
+3. Monitor DaemonSet deployment and status:
+
+After applying the DaemonSet, monitor its status to ensure proper deployment:
+
+Check DaemonSet status:
+```bash
+kubectl get daemonset -n kube-system containerd-nvme-config
+
+# DaemonSet should show DESIRED = CURRENT = READY
+NAME                     DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR   AGE
+containerd-nvme-config   2         2         2       2            2           <none>          5m
+
+# View detailed DaemonSet information if needed:
+kubectl describe daemonset -n kube-system containerd-nvme-config
+```
+
+Check pods status on each node:
+```bash
+kubectl get pods -n kube-system -l name=containerd-nvme-config -o wide
+
+NAME                           READY   STATUS    RESTARTS   AGE   IP           NODE
+containerd-nvme-config-abc123  1/1     Running   0          5m    10.244.1.5   aks-nvme-node-1
+containerd-nvme-config-def456  1/1     Running   0          5m    10.244.2.8   aks-nvme-node-2
+```
+
+View logs from a specific pod:
+```bash
+kubectl logs -n kube-system -l name=containerd-nvme-config --tail=50
+```
+
+Check if RAID setup completed successfully on a specific node:
+```bash
+kubectl exec -n kube-system $(kubectl get pods -n kube-system -l name=containerd-nvme-config -o jsonpath='{.items[0].metadata.name}') -- chroot /host df -h /mnt/nvme-raid/containerd
+
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/md0        3.5T  2.6G  3.3T   1% /mnt/nvme-raid/containerd
+```
+
+Verify containerd is using NVMe storage:
+```bash
+kubectl exec -n kube-system $(kubectl get pods -n kube-system -l name=containerd-nvme-config -o jsonpath='{.items[0].metadata.name}') -- chroot /host crictl info | grep -i containerdRootDir
+
+    "containerdRootDir": "/mnt/nvme-raid/containerd",
+```
+
+Check if containerd places images in the path:
+```bash
+kubectl exec -n kube-system $(kubectl get pods -n kube-system -l name=containerd-nvme-config -o jsonpath='{.items[0].metadata.name}') -- chroot /host ls /mnt/nvme-raid/containerd
+
+io.containerd.content.v1.content
+io.containerd.grpc.v1.cri
+io.containerd.grpc.v1.introspection
+io.containerd.metadata.v1.bolt
+io.containerd.runtime.v1.linux
+io.containerd.runtime.v2.task
+io.containerd.snapshotter.v1.blockfile
+io.containerd.snapshotter.v1.btrfs
+io.containerd.snapshotter.v1.native
+io.containerd.snapshotter.v1.overlayfs
+```
+
+Check systemd service status:
+```bash
+kubectl exec -n kube-system $(kubectl get pods -n kube-system -l name=containerd-nvme-config -o jsonpath='{.items[0].metadata.name}') -- chroot /host systemctl status setup-raid.service
+
+     Loaded: loaded (/etc/systemd/system/setup-raid.service; enabled; vendor preset: enabled)
+     Active: active (exited) since Tue 2025-10-28 03:24:38 UTC; 1 day 23h ago
+   Main PID: 861 (code=exited, status=0/SUCCESS)
+        CPU: 1.082s
 ```
