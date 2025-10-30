@@ -1,6 +1,12 @@
 # DaemonSet to configure containerd to use NVMe-backed storage for image caching.
-# Prerequisites: Nodes must use VM sizes with local NVMe disks (e.g., Standard_L8s_v3, Standard_L16s_v3).
 # This DaemonSet assembles a RAID 0 array (if multiple NVMe disks are present), mounts it, and updates containerd's config to use the NVMe volume for its root directory.
+#
+# Prerequisites:
+#    - Nodes must use VM sizes with local NVMe disks (e.g., Standard_L8s_v3, Standard_L16s_v3).
+#    - Ensure that VMs are not configured with ephemeral OS disks. Otherwise, make changes to exclude the NVMe disk that is taken by the ephemeral OS disk configuration.
+#
+# Warning: This approach is not officially supported by AKS and may break with future updates. Review and use with caution and test thoroughly before deploying in production environments.
+#
 
 apiVersion: apps/v1
 kind: DaemonSet
