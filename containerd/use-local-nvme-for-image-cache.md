@@ -60,10 +60,10 @@ az aks nodepool add \
 
 Download Daemonset sample and make changes as need:
 ```bash
-curl -o containerd-nvme-daemonset.yaml https://github.com/Azure-Samples/azure-container-storage-samples/containerd/containerd-nvme-daemonset.yaml
+curl -o containerd-nvme-config.yaml https://github.com/Azure-Samples/azure-container-storage-samples/containerd/containerd-nvme-config.yaml
 ```
 
 Create a DaemonSet to mount NVMe storage and configure containerd:
 ```bash
-kubectl apply -f containerd-nvme-daemonset.yaml
+kubectl apply -f containerd-nvme-config.yaml
 ```
