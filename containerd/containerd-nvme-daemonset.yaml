@@ -135,8 +135,10 @@ spec:
           
           # Update containerd configuration
           if grep -q '^\s*root\s*=' "$CONFIG_FILE"; then
+            cp "$CONFIG_FILE" "$CONFIG_FILE.bak"
             sed -i 's|^\(\s*root\s*=\s*\).*|\1"'"$NVME_ROOT_PATH"'"|' "$CONFIG_FILE"
           else
+            cp "$CONFIG_FILE" "$CONFIG_FILE.bak"
             # Insert root directive at the top
             { echo "root = \"$NVME_ROOT_PATH\""; cat "$CONFIG_FILE"; } > "$CONFIG_FILE.tmp" && mv "$CONFIG_FILE.tmp" "$CONFIG_FILE"
           fi
@@ -165,10 +167,10 @@ spec:
           chroot /host systemctl daemon-reload
           chroot /host systemctl enable setup-raid.service
 
-          chroot /host /usr/local/bin/setup-raid.sh
-
+          # Instead, restart the nodes to ensure safe switch in node boot time
+          # chroot /host /usr/local/bin/setup-raid.sh
           # Start containerd with new configuration
-          chroot /host systemctl restart containerd
+          # chroot /host systemctl restart containerd
 
           # Keep container running
           tail -f /dev/null
