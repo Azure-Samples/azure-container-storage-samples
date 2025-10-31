@@ -38,7 +38,9 @@ Ephemeral NVMe data disks provide several advantages over traditional remote sto
 
 The most effective approach is to configure the containerd runtime to use NVMe-backed storage for its root directory, which includes the image cache.
 
-1. Create a node pool with NVMe-capable VMs:
+1. Stop your workload.
+
+2. Create a node pool with NVMe-capable VMs:
 
 ```bash
 # Variables
@@ -56,24 +58,35 @@ az aks nodepool add \
     --node-vm-size $vmSize
 ```
 
-2. Configure containerd to use NVMe storage via DaemonSet:
+3. Configure containerd to use NVMe storage via DaemonSet:
 
 > [!WARNING]
 > This approach is not officially supported by AKS and may break with future updates. Review and use with caution and test thoroughly before deploying in production environments.
 
-Download Daemonset sample and make changes as need:
+Download Daemonset sample:
 ```bash
 curl -o containerd-nvme-daemonset.yaml https://github.com/Azure-Samples/azure-container-storage-samples/containerd/containerd-nvme-daemonset.yaml
 ```
+
+Review and make changes as needed.
 
 Create a DaemonSet to mount NVMe storage and configure containerd:
 ```bash
 kubectl apply -f containerd-nvme-daemonset.yaml
 ```
 
-3. Monitor DaemonSet deployment and status:
+4. Restart the node pool:
+```bash
+NODE_RESOURCE_GROUP=$(az aks show --name $CLUSTER_NAME --resource-group $RESOURCE_GROUP --query nodeResourceGroup -o tsv)
 
-After applying the DaemonSet, monitor its status to ensure proper deployment:
+VMSS_NAME=$(az vmss list --resource-group $NODE_RESOURCE_GROUP --query "[?contains(name, '${NODE_POOL}')].name" -o tsv)
+
+az vmss restart --name $VMSS_NAME --resource-group $NODE_RESOURCE_GROUP --instance-ids '*'
+```
+
+5. Monitor DaemonSet deployment and status:
+
+After applying the DaemonSet, monitor its status to ensure proper deployment.
 
 Check DaemonSet status:
 ```bash
